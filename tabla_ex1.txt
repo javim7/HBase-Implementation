@@ -1,0 +1,5 @@
+row key,cf:col,timestamp,value
+1,cf1:cq1,1681667063,value1
+2,cf1:cq2,1681667063,value2
+3,cf1:cq1,1681667063,value3
+4,cf2:cq1,1681667063,value4

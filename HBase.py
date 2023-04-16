@@ -1,56 +1,92 @@
-import happybase
-
-connection = happybase.Connection('localhost', port=9090)
+import time
 
 
-def create_table(table_name, column_families):
-    connection.create_table(table_name, column_families)
+class HBase:
+    def __init__(self):
+        self.tables = {}
 
+    def create(self, table_name):
+        if table_name not in self.tables:
+            self.tables[table_name] = {}
 
-def list_tables():
-    return connection.tables()
+    def put(self, table_name, column_family, column_qualifier, value, timestamp=None):
+        if table_name not in self.tables:
+            raise ValueError("La tabla '{}' no existe.".format(table_name))
 
+        num_rows = len(self.tables[table_name])
+        row_key = str(num_rows + 1) # Generate numeric row key based on number of existing rows
 
-def disable_table(table_name):
-    connection.disable_table(table_name)
+        if row_key not in self.tables[table_name]:
+            self.tables[table_name][row_key] = {}
 
+        if column_family not in self.tables[table_name][row_key]:
+            self.tables[table_name][row_key][column_family] = {}
 
-def is_table_enabled(table_name):
-    return connection.is_table_enabled(table_name)
+        if timestamp is None:
+            timestamp = int(time.time())
 
+        self.tables[table_name][row_key][column_family][column_qualifier] = (value, timestamp)
 
-def alter_table(table_name, column_families):
-    connection.disable_table(table_name)
-    connection.alter_table(table_name, column_families)
-    connection.enable_table(table_name)
+        if timestamp is None:
+            timestamp = int(time.time())
 
+        self.tables[table_name][row_key][column_family][column_qualifier] = (value, timestamp)
 
-def drop_table(table_name):
-    connection.delete_table(table_name, disable=True)
+    def list(self):
+        return list(self.tables.keys())
 
+    def get(self, table_name, row_key, column_family=None, column_qualifier=None, timestamp=None):
+        if table_name not in self.tables:
+            raise ValueError("La tabla '{}' no existe.".format(table_name))
 
-def drop_all_tables():
-    for table in connection.tables():
-        connection.delete_table(table, disable=True)
+        if row_key not in self.tables[table_name]:
+            return None
 
+        if column_family is None:
+            return self.tables[table_name][row_key]
 
-def describe_table(table_name):
-    return connection.table(table_name).schema
+        if column_family not in self.tables[table_name][row_key]:
+            return None
 
+        if column_qualifier is None:
+            return self.tables[table_name][row_key][column_family]
 
-# Ejemplo de uso
-table_name = 'test_table'
-column_families = {
-    'cf1': dict(),
-    'cf2': dict(),
-}
-create_table(table_name, column_families)
-print(list_tables())
-# alter_table(table_name, {'cf3': dict()})
-# print(describe_table(table_name))
-# disable_table(table_name)
-# print(is_table_enabled(table_name))
-# drop_table(table_name)
-# print(list_tables())
-# drop_all_tables()
-# print(list_tables())
+        if column_qualifier not in self.tables[table_name][row_key][column_family]:
+            return None
+
+        if timestamp is None:
+            return self.tables[table_name][row_key][column_family][column_qualifier]
+
+        value, ts = self.tables[table_name][row_key][column_family][column_qualifier]
+        if ts <= timestamp:
+            return value
+        else:
+            return None
+
+    def delete(self, table_name, row_key, column_family=None, column_qualifier=None, timestamp=None):
+        if table_name not in self.tables:
+            raise ValueError("La tabla '{}' no existe.".format(table_name))
+
+        if row_key not in self.tables[table_name]:
+            return
+
+        if column_family is None:
+            del self.tables[table_name][row_key]
+            return
+
+        if column_family not in self.tables[table_name][row_key]:
+            return
+
+        if column_qualifier is None:
+            del self.tables[table_name][row_key][column_family]
+            return
+
+        if column_qualifier not in self.tables[table_name][row_key][column_family]:
+            return
+
+        if timestamp is None:
+            del self.tables[table_name][row_key][column_family][column_qualifier]
+        else:
+            value, ts = self.tables[table_name][row_key][column_family][column_qualifier]
+            if ts <= timestamp:
+                del self.tables[table_name][row_key][column_family][column_qualifier]
