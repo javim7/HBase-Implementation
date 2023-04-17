@@ -9,11 +9,21 @@ class HFile:
     
     # Función para guardar una tabla en un archivo de HFile
     def save_table_to_hfile(self, table_name, table):
-        hfile_path = f"tabla_{table_name}.txt"
-        with open(hfile_path, 'w') as f:
+        hfile_path = f"hfiles/tabla_{table_name}.txt"
+        
+        # Check if file exists
+        if os.path.exists(hfile_path):
+            os.remove(hfile_path) # Delete existing file
+        
+        with open(hfile_path, mode='w', newline='') as f: # mode changed to 'w'
             writer = csv.writer(f)
-            writer.writerow(["row key", "cf:col", "timestamp", "value"]) # Adding header row
+            writer.writerow(["row key", "cf:col", "timestamp", "value"]) # Always add header row
             for row_key, row in table.items():
                 for cf, columns in row.items():
                     for cq, (value, ts) in columns.items():
-                        writer.writerow([row_key.strip(), f"{cf}:{cq}".strip(), str(ts).strip(), value.strip()])
+                        writer.writerow([row_key.strip(), f"{cf}:{cq}".strip(), ts, value])
+
+
+
+
+
