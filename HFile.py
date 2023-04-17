@@ -5,11 +5,11 @@ import operator
 class HFile:
     def __init__(self, table_name):
         self.table_name = table_name
-        self.hfile_path = f"tabla_{self.table_name}.txt"
+        self.hfile_path = f"tabla_{self.table_name}.csv"
     
     # Función para guardar una tabla en un archivo de HFile
     def save_table_to_hfile(self, table_name, table):
-        hfile_path = f"hfiles/tabla_{table_name}.txt"
+        hfile_path = f"hfiles/tabla_{table_name}.csv"
         
         # Check if file exists
         if os.path.exists(hfile_path):
