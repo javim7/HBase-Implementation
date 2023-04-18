@@ -32,6 +32,10 @@ while True:
         table_name = command.split()[1]
         hbase.disable(table_name)
 
+    elif first_word == "enable":
+        table_name = command.split()[1]
+        hbase.enable(table_name)
+
     elif first_word == "is_enabled":
         table_name = command.split()[1]
         hbase.is_enabled(table_name)

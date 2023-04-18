@@ -121,6 +121,13 @@ class HBase:
         else:
             print(f"Table '{table_name}' does not exist")
     
+    def enable(self, table_name):
+        if table_name in self.tables:
+            self.tables[table_name].enabled = True
+            print(f"Table '{table_name}' enabled")
+        else:
+            print(f"Table '{table_name}' does not exist")
+    
     def is_enabled(self, table_name):
         if table_name in self.tables:
             print(self.tables[table_name].enabled)
